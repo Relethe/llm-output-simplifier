@@ -37,7 +37,7 @@ Copy-Item .env.example .env   # 填入 DASHSCOPE_API_KEY（百炼，简化器用
 - **`simplify(text)`** → 返回精简后的文本
 - **`simplify_with_stats(text)`** → 返回精简文本 + 降幅/操作统计
 
-### 3. 示例（来自真实实验数据，非虚构）
+### 3. 示例
 
 以下取自 200 条真实 LLM 回答实验（提问来自 LMSYS 真实用户对话，回答由 GLM/Qwen 生成）。
 
