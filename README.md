@@ -87,6 +87,40 @@ Copy-Item .env.example .env   # 填入 DASHSCOPE_API_KEY（百炼，简化器用
 - 密钥只放 `.env`（已被 `.gitignore` 排除），`config.yaml` 只引用环境变量名。
 - 预算熔断：`config.yaml` `budget.cap_cny`（默认 ¥100）。
 
+## 如何更换 API / 模型（换服务商必看）
+
+简化器走 **OpenAI 兼容接口**，所以任何提供 OpenAI 兼容端点的服务商都能接。改 `config.yaml` 里 `models.simplifier_external` 的 4 个字段即可：
+
+```yaml
+simplifier_external:
+  model: deepseek-v4.1-flash-1017        # ① 模型 ID
+  base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1  # ② API 端点
+  api_key_env: DASHSCOPE_API_KEY         # ③ 密钥对应的环境变量名
+  api_protocol: responses                # ④ 协议：responses 或 chat
+  default_reasoning_effort: low
+```
+
+**步骤：**
+1. 改上面 4 个字段为你的服务商值。
+2. 在 `.env` 里加上 ③ 指定的环境变量和密钥，例如 `OPENAI_API_KEY=sk-...`。
+3. 跑冒烟测试验证：`.venv\Scripts\python.exe -m scripts.smoke_test`。
+
+**常见服务商示例：**
+
+| 服务商 | base_url | api_protocol | 备注 |
+|---|---|---|---|
+| 阿里云百炼（默认）| `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `responses` | 用 `DASHSCOPE_API_KEY` |
+| OpenAI 官方 | `https://api.openai.com/v1` | `responses` | 用 `OPENAI_API_KEY` |
+| DeepSeek 官方 | `https://api.deepseek.com/v1` | `chat` | 用 `DEEPSEEK_API_KEY` |
+| Moonshot Kimi | `https://api.moonshot.cn/v1` | `chat` | 用 `MOONSHOT_API_KEY`，部分模型仅允许 `temperature=1` |
+| 其他兼容端点 | 服务商提供的 `/v1` 地址 | 视支持情况 | 先确认支持 responses 还是 chat |
+
+**两个常见坑：**
+- **协议不匹配**：不是所有端点都支持 Responses API。若报接口错误，把 `api_protocol` 改成 `chat` 再试。
+- **参数限制**：有的模型限制 `temperature` / `reasoning` 参数（如 kimi-k3.1-pro 只允许 `temperature=1`）。换模型后务必先跑 `smoke_test` 验证。
+
+> 备用简化器 `models.simplifier_fallback` 同理可改；主简化器超时/异常时会自动切到它。
+
 ## 项目结构
 
 ```
