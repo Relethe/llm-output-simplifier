@@ -1,0 +1,112 @@
+# 通用 LLM 输出精简工具 — 实验配置
+# 规格见 SPEC.md；规格变更与决策规则预注册见 logs/experiment_log.md
+# 密钥不写在这里：只引用环境变量名，实际值放 .env（已 gitignore）
+
+seed: 42
+
+paths:
+  data: data
+  responses: responses
+  annotations: annotations
+  schemes: schemes
+  eval: eval
+  reports: reports
+  logs: logs
+
+# ── 模型阵容（Path 2：开发家族 3→2，已批准，见 SPEC-CHANGE-001）──
+# 家族约束：裁判 ∉ 开发家族 ∪ 改写家族；留出 ≠ 开发/裁判家族。
+# model 为默认 ID，具体版本以冒烟测试返回为准并记入日志（模型版本漂移风险）。
+models:
+  dev:
+    - role: dev1
+      family: glm
+      model: glm-5.3   # SPEC-CHANGE-006：dev1 改 GLM（与 DeepSeek 代理跨家族）
+      base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      api_key_env: DASHSCOPE_API_KEY
+      api_protocol: responses
+    - role: dev2
+      family: qwen
+      model: qwen4-max
+      base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      api_key_env: DASHSCOPE_API_KEY
+      api_protocol: responses
+  rewriter:                      # 兼容旧配置，方案B实际使用 simplifier_external
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+  simplifier_external:            # 用户要求：简化器改用百炼 DeepSeek，不再用 OpenExt GPT/Sol
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+    default_reasoning_effort: low
+  simplifier_fallback:             # 备用同为百炼 DeepSeek（不再用 OpenExt Kimi）
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+    default_reasoning_effort: low
+  judge:                         # DeepSeek 独立会话，文本去来源标签
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+  # G1/G2 标注员、出题、答题同为 deepseek-v4.1-flash-1017，各独立会话
+  holdout:                       # 留出：官方 Kimi（额度有限，省用），仅阶段 7，开发期锁死
+    family: kimi
+    model: kimi-k3.1-pro         # 阶段7核实：官方key无moonshot-v1-32k，实际可用kimi-k3.1-pro/kimi-k3
+    base_url: https://api.moonshot.cn/v1
+    api_key_env: MOONSHOT_API_KEY
+    api_protocol: chat
+    temperature: 1               # kimi-k3.1-pro 仅允许 temperature=1
+    dev_phase_locked: true
+  g1:                            # 标注员/分类器 G1（DeepSeek 独立会话）
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+  g2:                            # 标注员 G2（DeepSeek 独立会话；样例打乱+规范措辞改写，不看 G1）
+    family: deepseek
+    model: deepseek-v4.1-flash-1017
+    base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+    api_key_env: DASHSCOPE_API_KEY
+    api_protocol: responses
+
+# external simplified-model estimate, CNY / million tokens, conservative placeholder until provider billing is checked
+# gpt-6.2-astra: {in: 30, out: 120}  # add under pricing_cny_per_mtok when running budgeted simplification batches
+
+generation:
+  system_prompt: null            # 阶段 3：不加系统提示词
+  temperature: null              # null = 各模型默认参数
+  max_tokens: null               # 禁止用 max_tokens 截断（方案 C 约束）
+  n: 1
+
+budget:
+  cap_cny: 100                   # 用户批准 2026-11-19；硬性熔断，超支自动停
+  spent_cny: 0.0                 # 运行时累计，持久化到 logs/budget_state.json
+
+# 价格表（人民币 / 百万 token）。近似值【推断·待官网核实】，熔断按此估算、偏保守。
+pricing_cny_per_mtok:
+  deepseek-v4.1-flash-1017: {in: 1, out: 4}    # 近似【推断·待核】
+  qwen4-max: {in: 20, out: 60}                 # 近似【推断·待核】
+  glm-5.3: {in: 4, out: 16}                    # 近似【推断·待核】；百炼为 token-plan 配额制，实际按 token 额度扣
+  gpt-6.2-sol: {in: 10, out: 40}                # 保守占位【推断·待供应商价格核实】
+  kimi-k3.1-pro: {in: 30, out: 120}             # 保守占位【推断·待供应商价格核实】
+  moonshot-v1-32k: {in: 24, out: 24}           # 近似【推断·待核】；官方 Kimi 额度有限，单独省用
+
+datasets:
+  dev_source: lmsys/lmsys-chat-1m        # 需 HF 同意条款
+  test_source: allenai/WildChat-1M       # 需 HF 同意条款
+  fallback: lmarena-ai/arena-human-preference-55k   # 备用，已确认可访问（待复验）
+  hf_endpoint: https://hf-mirror.com     # 国内镜像
+
+reading_speed:
+  english_wpm_initial: 238       # Brysbaert 2019，仅英文初始值
+  # 中文/代码/表格/列表速度 v 与结构切换开销 c：阶段 1 标定后写入 reading_speed.json
+  calibrated_file: reading_speed.json

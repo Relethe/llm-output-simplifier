@@ -1,0 +1,20 @@
+# 方案 F：LiteLLM proxy 配置（SPEC §9.4）。部署需 pip install litellm[proxy]。
+# 启动：litellm --config litellm_config.yaml --port 8000
+# 自定义钩子 schemes/scheme_f_proxy.py 在调用前做意图分类+注入A，调用后可串B。
+model_list:
+  - model_name: simplify-dev1
+    litellm_params:
+      model: openai/deepseek-v4.1-flash-1017
+      api_base: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      api_key: os.environ/DASHSCOPE_API_KEY
+  - model_name: simplify-dev2
+    litellm_params:
+      model: openai/qwen4-max
+      api_base: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+      api_key: os.environ/DASHSCOPE_API_KEY
+
+litellm_settings:
+  callbacks: schemes.scheme_f_proxy.proxy_handler
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

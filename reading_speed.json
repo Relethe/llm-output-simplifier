@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "spec": "SPEC.md v0.2 §5",
+    "created": "2026-11-20",
+    "status": "占位版 interim：英文文献值已定；中文与代码/表格/列表/c 待用户阶段7计时回归后重算全部结果",
+    "formula": "T_总 = Σ(L_i / v_类型(i)) + c * N_结构",
+    "placeholder_rule": "代码/表格/列表 = 0.5 × 正文速度（基准用英文238，中文正文待实测）；c 暂计0；均标推断"
+  },
+  "english_text": {
+    "value": 238, "unit": "words/min",
+    "source": "Brysbaert 2019, Journal of Memory and Language 109:104047（非虚构默读元分析，190研究/18573人）",
+    "evidence": "文献",
+    "url": "https://doi.org/10.1016/j.jml.2019.104047",
+    "note": "虚构260 wpm、朗读183 wpm 仅参考"
+  },
+  "chinese_text": {
+    "value": null, "unit": "chars/min",
+    "source": "Brysbaert 2019 经 web 查核不含中文数值（元分析针对英文/拉丁字母语言）；按 SPEC §5 查不到→用用户实测",
+    "evidence": "待用户阶段7实测",
+    "note": "interim 涉及中文正文的 T_总 标推断"
+  },
+  "code": {
+    "value": 119, "unit": "lines/min",
+    "source": "占位 = 0.5 × 英文正文238（SPEC §5）",
+    "evidence": "推断", "note": "待用户计时回归"
+  },
+  "table_row": {
+    "value": 119, "unit": "rows/min",
+    "source": "占位 = 0.5 × 英文正文238（SPEC §5）",
+    "evidence": "推断", "note": "待用户计时回归"
+  },
+  "list_item": {
+    "value": 119, "unit": "items/min",
+    "source": "占位 = 0.5 × 英文正文238（SPEC §5）",
+    "evidence": "推断", "note": "中文列表基准待中文正文实测后调整"
+  },
+  "c_structure_switch": {
+    "value": 0, "unit": "seconds/switch",
+    "source": "占位：结构切换开销待用户计时回归，暂计0",
+    "evidence": "推断", "note": "interim T_总 不含结构开销，偏低；回归后重算"
+  }
+}

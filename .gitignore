@@ -1,0 +1,18 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.blend1
+.DS_Store
+
+# 大的生成数据 / 缓存（按 RUNNING.md 可重新生成）
+data/
+responses/
+annotations/
+human/
+*.ckpt.jsonl
+logs/calls.jsonl
+logs/budget_state.json
+eval/*.json
+eval/evalplus/
