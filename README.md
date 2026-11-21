@@ -117,11 +117,10 @@ Copy-Item .env.example .env   # 填入 DASHSCOPE_API_KEY（百炼，简化器用
 
 ```yaml
 simplifier_external:
-  model: deepseek-v4.1-flash-1017        # ① 模型 ID
-  base_url: https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1  # ② API 端点
-  api_key_env: DASHSCOPE_API_KEY         # ③ 密钥对应的环境变量名
-  api_protocol: responses                # ④ 协议：responses 或 chat
-  default_reasoning_effort: low
+  model: deepseek-chat                   # ① 模型 ID（DeepSeek 官方）
+  base_url: https://api.deepseek.com/v1  # ② API 端点
+  api_key_env: DEEPSEEK_API_KEY          # ③ 密钥对应的环境变量名
+  api_protocol: chat                     # ④ 协议：responses 或 chat
 ```
 
 **步骤：**
@@ -133,10 +132,10 @@ simplifier_external:
 
 | 服务商 | base_url | api_protocol | 备注 |
 |---|---|---|---|
-| 阿里云百炼（默认）| `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `responses` | 用 `DASHSCOPE_API_KEY` |
+| DeepSeek 官方（推荐）| `https://api.deepseek.com/v1` | `chat` | 用 `DEEPSEEK_API_KEY`，模型如 `deepseek-chat` |
 | OpenAI 官方 | `https://api.openai.com/v1` | `responses` | 用 `OPENAI_API_KEY` |
-| DeepSeek 官方 | `https://api.deepseek.com/v1` | `chat` | 用 `DEEPSEEK_API_KEY` |
 | Moonshot Kimi | `https://api.moonshot.cn/v1` | `chat` | 用 `MOONSHOT_API_KEY`，部分模型仅允许 `temperature=1` |
+| 阿里云百炼 | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `responses` | 用 `DASHSCOPE_API_KEY`（仓库当前默认配置）|
 | 其他兼容端点 | 服务商提供的 `/v1` 地址 | 视支持情况 | 先确认支持 responses 还是 chat |
 
 **两个常见坑：**
